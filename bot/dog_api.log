@@ -1,0 +1,10 @@
+2025-06-07 16:07:12,491 - aiohttp - ERROR - {'message': 'https://images.dog.ceo/breeds/pitbull/20190710_143021.jpg', 'status': 'success'}
+2025-06-07 16:07:12,491 - aiohttp - ERROR - 0
+Traceback (most recent call last):
+  File "C:\Users\Алексей\PycharmProjects\Bot\bot\service\DogApi.py", line 23, in get_dog_url
+    return data[0]['message']
+           ~~~~^^^
+KeyError: 0
+2025-06-07 16:07:44,115 - aiohttp - ERROR - {'message': 'https://images.dog.ceo/breeds/spaniel-blenheim/n02086646_2105.jpg', 'status': 'success'}
+2025-06-07 16:08:57,593 - aiohttp - ERROR - {'message': 'https://images.dog.ceo/breeds/terrier-wheaten/n02098105_1565.jpg', 'status': 'success'}
+2025-06-07 16:09:13,232 - aiohttp - ERROR - {'message': 'https://images.dog.ceo/breeds/spitz-japanese/beet-004.jpg', 'status': 'success'}
