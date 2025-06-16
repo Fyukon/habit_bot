@@ -18,3 +18,8 @@
 [2025-06-16 14:06:31,477] - habits_buttons.py:95 - INFO - ['Зарядка']
 [2025-06-16 14:08:27,665] - database.py:34 - ERROR - Error adding user: UNIQUE constraint failed: users.telegram_id
 [2025-06-16 14:12:50,030] - database.py:34 - ERROR - Error adding user: UNIQUE constraint failed: users.telegram_id
+[2025-06-16 14:25:23,763] - habits_commands.py:32 - INFO - Зашел в /add
+[2025-06-16 14:25:29,032] - database.py:106 - INFO - Starting delete for 582690569:Зарядка
+[2025-06-16 14:25:29,040] - database.py:115 - INFO - Successfully deleted Зарядка for 582690569
+[2025-06-16 14:25:33,383] - habits_commands.py:32 - INFO - Зашел в /add
+[2025-06-16 14:25:33,715] - habits_commands.py:49 - ERROR - add_habit() takes 2 positional arguments but 3 were given
