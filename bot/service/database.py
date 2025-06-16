@@ -39,6 +39,7 @@ async def add_user(telegram_id: int, name: str):
 
 async def add_habit(telegram_id: int, name: str, times_per_day: int):
     """Добавление привычки с транзакцией"""
+    name = name.capitalize()
     conn = await get_connection()
     try:
         async with conn.cursor() as cursor:
@@ -68,6 +69,7 @@ async def get_habits(telegram_id: int):
                                  WHERE telegram_id = ?
                                  ''', (telegram_id,))
             logger.info("Got habits...")
+            # Возвращает в формате [(ID, name, amount),]
             return await cursor.fetchall()
     except Exception as e:
         logger.error(f"Error getting habits: {e}")
@@ -79,6 +81,7 @@ async def get_habits(telegram_id: int):
 async def get_habit(telegram_id: int, habit: str):
     """Получение конкретной привычки"""
     conn = await get_connection()
+    habit = habit.capitalize()
     try:
         async with conn.cursor() as cursor:
             await cursor.execute('''
@@ -97,6 +100,7 @@ async def get_habit(telegram_id: int, habit: str):
 
 async def delete_habit(telegram_id: int, habit: str):
     """Удаление привычки с обработкой ошибок"""
+    habit = habit.capitalize()
     conn = await get_connection()
     try:
         logger.info(f"Starting delete for {telegram_id}:{habit}")

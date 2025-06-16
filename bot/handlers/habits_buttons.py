@@ -12,7 +12,7 @@ from bot.service import database
 
 logger = logging.getLogger("HabitBot")
 
-router = Router(name="Habits")
+router = Router(name="habit_buttons")
 
 
 class AddHabit(StatesGroup):
@@ -49,12 +49,15 @@ async def start_add_habit(callback: CallbackQuery, state: FSMContext):
 
 @router.message(AddHabit.waiting_for_name)
 async def name_add_habit(message: Message, state: FSMContext):
-    await message.bot.send_message(text="Введите количество повторений!", chat_id=message.from_user.id,
-                                   reply_markup=cancel_keyboard())
-    await state.update_data(habit_name=message.text)
-    await state.set_state(AddHabit.waiting_for_times)
-    logger.info("Пользователь ввел название привычки!")
-    logger.info("Пользователь вводит количество повторений")
+    habit = message.text
+    if await database.get_habit(message.from_user.id, habit):
+        await message.answer("Привычка уже ЕСТЬ!")
+        await state.clear()
+    else:
+        await message.bot.send_message(text="Введите количество повторений!", chat_id=message.from_user.id,
+                                       reply_markup=cancel_keyboard())
+        await state.update_data(habit_name=message.text)
+        await state.set_state(AddHabit.waiting_for_times)
 
 
 @router.message(AddHabit.waiting_for_times)
