@@ -1,5 +1,7 @@
 import logging
 
+from .reminder import scheduler, send_reminder
+
 import aiosqlite
 
 file_path = r"C:\Users\Алексей\PycharmProjects\Bot\bot\test.db"
@@ -37,16 +39,16 @@ async def add_user(telegram_id: int, name: str):
         await conn.close()
 
 
-async def add_habit(telegram_id: int, name: str, times_per_day: int):
+async def add_habit(telegram_id: int, name: str, times_per_day: int, reminder: tuple[int, int]):
     """Добавление привычки с транзакцией"""
     name = name.capitalize()
     conn = await get_connection()
     try:
         async with conn.cursor() as cursor:
             await cursor.execute('''
-                                 INSERT INTO habits (telegram_id, name, times_per_day)
-                                 VALUES (?, ?, ?)
-                                 ''', (telegram_id, name, times_per_day))
+                                 INSERT INTO habits (telegram_id, name, times_per_day, hours, minutes)
+                                 VALUES (?, ?, ?, ?, ?)
+                                 ''', (telegram_id, name, times_per_day, reminder[0], reminder[1]))
             await conn.commit()
             logger.debug(f"Habit added for {telegram_id}")
     except Exception as e:
@@ -55,6 +57,7 @@ async def add_habit(telegram_id: int, name: str, times_per_day: int):
         raise
     finally:
         await conn.close()
+
 
 
 async def get_habits(telegram_id: int):

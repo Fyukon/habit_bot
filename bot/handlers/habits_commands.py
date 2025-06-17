@@ -1,11 +1,11 @@
 import logging
 
-from aiogram import Router, F
+from aiogram import Router
 from aiogram.filters import Command, CommandObject
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
+from text import texts
 
+from bot.keyboards.inline import menu_keyboard
 from bot.service import database
 
 logger = logging.getLogger("HabitBot")
@@ -13,18 +13,23 @@ logger = logging.getLogger("HabitBot")
 router = Router(name="habits_commands")
 
 
+@router.message(Command("menu"))
+async def menu(message: Message):
+    await message.answer(texts["menu"], reply_markup=menu_keyboard())
+
+
 @router.message(Command("del"))
 async def del_habit(message: Message, command: CommandObject):
     habit = command.args
     if not habit:
-        await message.answer("Формат: /del <название привычки>")
+        await message.answer(texts["del_bad_format"])
         return
 
     resp = await database.delete_habit(message.from_user.id, habit)
     if resp:
-        await message.answer(f"Привычка {resp} удалена")
+        await message.answer(texts["del_success"].format(name=habit))
     else:
-        await message.answer(f"У вас нет привычки {habit}")
+        await message.answer(texts["del_fail"].format(name=habit))
 
 
 @router.message(Command("add"))
@@ -34,26 +39,28 @@ async def add_habit(message: Message, command: CommandObject):
         habit = command.args
         if not habit:
             raise ValueError("Нет аргументов")
-        name, count = habit.rsplit(" ", 1)
+        name, count, reminder = habit.split(" ")
         count = int(count)
-
+        hours, minutes = tuple(map(int, reminder.split(":")))
+        if not (0 <= hours <= 24) or not (0 <= minutes <= 60):
+            raise ValueError
         resp = await database.get_habit(message.from_user.id, name)
         if resp:
-            await message.answer(f"Привычка {name} уже существует!")
+            await message.answer(texts["add_duplicate"].format(name=name))
             return
-
-        await database.add_habit(message.from_user.id, name, count)
-        await message.answer(f"Привычка {name} добавлена!")
+        reminder = (hours, minutes)
+        await database.add_habit(message.from_user.id, name, count, reminder)
+        await message.answer(texts["add_success"].format(name=name))
     except Exception as e:
-        await message.answer(f"Формат: /add <название> <кол-во повторений>")
-        logger.error(e)
+        await message.answer(texts["add_bad_format"])
+        logger.exception(e)
 
 
 @router.message(Command("list"))
 async def list_habit(message: Message):
     habits = await database.get_habits(message.from_user.id)
     if not habits:
-        await message.answer("У вас нет привычек!")
+        await message.answer(texts["list_empty"])
         return
     text = "\n".join([habit[1] for habit in habits])
-    await message.answer("Ваши привычки:\n" + text)
+    await message.answer(texts["list"].format(habits=text))

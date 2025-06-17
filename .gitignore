@@ -4,3 +4,4 @@ test.db
 .vscode/
 venv/
 __pycache__/
+bot/bot.service.logs
