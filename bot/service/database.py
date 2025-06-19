@@ -25,9 +25,27 @@ async def add_user(telegram_id: int, name: str):
     try:
         async with conn.cursor() as cursor:
             await cursor.execute('''
-                                 INSERT INTO users (telegram_id, name)
-                                 VALUES (?, ?)
+                                 INSERT INTO users (telegram_id, name, reminder)
+                                 VALUES (?, ?, None)
                                  ''', (telegram_id, name))
+            await conn.commit()
+    except Exception as e:
+        await conn.rollback()
+        logger.error(f"Error adding user: {e}")
+        raise
+    finally:
+        await conn.close()
+
+
+async def set_reminder(telegram_id: int, time: str):
+    conn = await get_connection()
+    try:
+        async with conn.cursor() as cursor:
+            await cursor.execute('''
+                                 UPDATE users
+                                 SET reminder = ?
+                                 WHERE telegram_id = ?
+                                 ''', (time, telegram_id))
             await conn.commit()
     except Exception as e:
         await conn.rollback()

@@ -7,6 +7,7 @@ from text import texts
 
 from bot.keyboards.inline import menu_keyboard
 from bot.service import database
+from bot.service.reminder import scheduler, send_reminder
 
 logger = logging.getLogger("HabitBot")
 
@@ -60,3 +61,22 @@ async def list_habit(message: Message):
         return
     text = "\n".join([habit[1] for habit in habits])
     await message.answer(texts["list"].format(habits=text))
+
+
+@router.message(Command("remind"))
+async def remind_habit(message: Message, command: CommandObject):
+    logger.info("Пользователь зашел в /remind...")
+    time = command.args
+    try:
+        hours, minutes = map(int, time.split(":"))
+        scheduler.add_job(send_reminder,
+                          hour=hours,
+                          minute=minutes,
+                          trigger="cron",
+                          args=[message.bot, message.from_user.id],
+                          id=f"reminder_{message.from_user.id}",
+                          replace_existing=True
+                          )
+        await message.answer(texts["remind_success"].format(time=time))
+    except ValueError:
+        await message.answer(texts["remind_fail"])
