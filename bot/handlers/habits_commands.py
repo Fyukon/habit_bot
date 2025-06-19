@@ -39,17 +39,13 @@ async def add_habit(message: Message, command: CommandObject):
         habit = command.args
         if not habit:
             raise ValueError("Нет аргументов")
-        name, count, reminder = habit.split(" ")
+        name, count = habit.split(" ")
         count = int(count)
-        hours, minutes = tuple(map(int, reminder.split(":")))
-        if not (0 <= hours <= 24) or not (0 <= minutes <= 60):
-            raise ValueError
         resp = await database.get_habit(message.from_user.id, name)
         if resp:
             await message.answer(texts["add_duplicate"].format(name=name))
             return
-        reminder = (hours, minutes)
-        await database.add_habit(message.from_user.id, name, count, reminder)
+        await database.add_habit(message.from_user.id, name, count)
         await message.answer(texts["add_success"].format(name=name))
     except Exception as e:
         await message.answer(texts["add_bad_format"])

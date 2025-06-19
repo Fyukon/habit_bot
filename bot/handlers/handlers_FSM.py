@@ -37,35 +37,15 @@ async def times_add_habit(message: Message, state: FSMContext):
         if int(text) <= 0:
             raise ValueError
 
-        await state.update_data(habit_times=int(message.text))
-        await message.answer(texts["input_habit_remind"], reply_markup=cancel_keyboard())
-        await state.set_state(AddHabit.waiting_for_reminder)
-
-        logger.info("Пользователь вводит время повтора")
-
+        logger.info("Привычка завершает добавление в БД...")
+        data = await state.get_data()
+        logger.info(data)
+        await database.add_habit(message.from_user.id, data['habit_name'], int(text))
         await message.bot.send_message(text=texts["add_success"].format(name=data["habit_name"]),
                                        chat_id=message.from_user.id,
                                        reply_markup=menu_keyboard())
-
+        await state.clear()
     except ValueError:
         await message.bot.send_message(text=texts["bad_number"], chat_id=message.from_user.id,
                                        reply_markup=cancel_keyboard())
         logger.exception("Плохое число выбрал пользователь!")
-
-
-@router.message(AddHabit.waiting_for_reminder)
-async def reminder_add_habit(message: Message, state: FSMContext):
-    text = message.text
-    try:
-        hours, minutes = map(int, text.split(":"))
-        if not (0 <= hours <= 24) or not (0 <= minutes <= 60):
-            raise ValueError
-        data = await state.get_data()
-        habit_name = data["habit_name"]
-        habit_times = data["habit_times"]
-        reminder = (hours, minutes)
-        await database.add_habit(message.from_user.id, habit_name, habit_times, reminder)
-    except ValueError:
-        await message.bot.send_message(text=texts["input_habit_remind"],
-                                       chat_id=message.from_user.id,
-                                       reply_markup=cancel_keyboard())
