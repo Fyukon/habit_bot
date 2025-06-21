@@ -59,7 +59,7 @@ async def list_habit(message: Message):
     if not habits:
         await message.answer(texts["list_empty"])
         return
-    text = "\n".join([habit[1] for habit in habits])
+    text = "\n".join([habit[1] for habit in habits])//
     await message.answer(texts["list"].format(habits=text))
 
 
